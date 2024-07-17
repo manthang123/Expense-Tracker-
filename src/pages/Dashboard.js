@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import Cards from '../components/Cards/cards'; // Correctly import the Cards component
-import AddExpenseModal from '../components/Modals/AddExpense'; // Make sure to import AddExpenseModal
-import AddIncomeModal from '../components/Modals/AddIncome'; // Make sure to import AddIncomeModal
-import moment from 'moment'; // Import moment for date formatting
+import Cards from '../components/Cards/cards';
+import AddExpenseModal from '../components/Modals/AddExpense';
+import AddIncomeModal from '../components/Modals/AddIncome';
+import moment from 'moment';
 import { addDoc, collection } from "firebase/firestore";
 import { auth, db } from "../config";
 import { toast } from "react-toastify";
-import { onAuthStateChanged } from 'firebase/auth'; // Import onAuthStateChanged
+import { onAuthStateChanged } from 'firebase/auth';
 
 const Dashboard = () => {
   const [isExpenseModalVisible, setIsExpenseModalVisible] = useState(false);
   const [isIncomeModalVisible, setIsIncomeModalVisible] = useState(false);
-  const [user, setUser] = useState(null); // State to store the current user
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
