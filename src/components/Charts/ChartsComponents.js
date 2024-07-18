@@ -1,27 +1,44 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
 import { Line } from '@ant-design/charts';
+import moment from 'moment';
 
-function ChartsComponents() {
-  const data = [
-    { year: '1991', value: 3 },
-    { year: '1992', value: 4 },
-    { year: '1993', value: 3.5 },
-    { year: '1994', value: 5 },
-    { year: '1995', value: 4.9 },
-    { year: '1996', value: 6 },
-    { year: '1997', value: 7 },
-    { year: '1998', value: 9 },
-    { year: '1999', value: 13 },
-  ];
+function ChartsComponents({ sortedTransactions }) {
+  const [transactions, setTransactions] = useState([]);
+
+  useEffect(() => {
+    // Sort transactions by date and set state
+    const sortedTransactionsByDate = sortedTransactions.sort((a, b) => {
+      return new Date(a.date) - new Date(b.date);
+    });
+    setTransactions(sortedTransactionsByDate);
+  }, [sortedTransactions]);
+
+  // Map transactions to the format expected by the chart
+  const chartData = transactions.map(transaction => ({
+    date: moment(transaction.date).format('YYYY-MM-DD'),
+    amount: transaction.amount,
+  }));
 
   const config = {
-    data,
-    xField: 'year',
-    yField: 'value',
+    data: chartData,
+    xField: 'date',
+    yField: 'amount',
+    point: {
+      size: 5,
+      shape: 'diamond',
+    },
+    label: {
+      style: {
+        fill: '#aaa',
+      },
+    },
   };
-  let charts ;
 
-  return <Line {...config} />;
+  return (
+    <div className="charts-container">
+      <Line {...config} />
+    </div>
+  );
 }
 
-export default ChartsComponents
+export default ChartsComponents;
