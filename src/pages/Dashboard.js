@@ -3,7 +3,7 @@ import { addDoc, collection, query, onSnapshot } from "firebase/firestore";
 import { onAuthStateChanged } from 'firebase/auth';
 import moment from 'moment';
 import toast, { Toaster } from 'react-hot-toast';
-import { Table, Input, Select, Radio } from 'antd';
+import { Table, Input, Select, Radio, DatePicker } from 'antd';
 import { Header } from 'antd/es/layout/layout';
 import { auth, db } from "../config";
 import Cards from '../components/Cards/cards';
@@ -12,10 +12,11 @@ import AddIncomeModal from '../components/Modals/AddIncome';
 import Loader from '../components/Loader';
 import ChartsComponents from '../components/Charts/ChartsComponents';
 import NoTransactions from '../components/NoTransactions';
-import './Dashboard.css';
-import { DatePicker } from 'antd';
 import ExpensePieChart from '../components/TransactionTable/ExpensePieChart';
+import './Dashboard.css';
+
 const { Option } = Select;
+
 const Dashboard = () => {
   const [isExpenseModalVisible, setIsExpenseModalVisible] = useState(false);
   const [isIncomeModalVisible, setIsIncomeModalVisible] = useState(false);
@@ -26,7 +27,6 @@ const Dashboard = () => {
   const [currentBalance, setCurrentBalance] = useState(0);
   const [income, setIncome] = useState(0);
   const [expenses, setExpenses] = useState(0);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [sortKey, setSortKey] = useState("");
@@ -48,21 +48,10 @@ const Dashboard = () => {
     calculateBalance();
   }, [transactions]);
 
-  const showExpenseModal = () => {
-    setIsExpenseModalVisible(true);
-  };
-
-  const showIncomeModal = () => {
-    setIsIncomeModalVisible(true);
-  };
-
-  const handleExpenseCancel = () => {
-    setIsExpenseModalVisible(false);
-  };
-
-  const handleIncomeCancel = () => {
-    setIsIncomeModalVisible(false);
-  };
+  const showExpenseModal = () => setIsExpenseModalVisible(true);
+  const showIncomeModal = () => setIsIncomeModalVisible(true);
+  const handleExpenseCancel = () => setIsExpenseModalVisible(false);
+  const handleIncomeCancel = () => setIsIncomeModalVisible(false);
 
   const onFinish = (values, type) => {
     if (!user) {
@@ -77,11 +66,12 @@ const Dashboard = () => {
       tag: values.tag,
       name: values.name,
     };
-    console.log("New transaction:", newTransaction); // Add this line for debugging
+    console.log("New transaction:", newTransaction);
     addTransaction(newTransaction);
     setIsExpenseModalVisible(false);
     setIsIncomeModalVisible(false);
   };
+
   const addTransaction = async (transaction) => {
     if (!user) {
       toast.error("No user is authenticated");
@@ -95,7 +85,7 @@ const Dashboard = () => {
       );
       console.log("Document written with ID: ", docRef.id);
       toast.success("Transaction Added!");
-      fetchTransactions(); // Add this line to refresh the transactions
+      fetchTransactions();
     } catch (e) {
       console.error("Error adding document: ", e);
       toast.error("Couldn't add transaction");
@@ -171,42 +161,28 @@ const Dashboard = () => {
       key: "tag",
     },
   ];
-  let sortedTransactions = transactions.sort((a, b) => {
-    return new Date(a.date) - new Date(b.date);
-  });
-  <DatePicker
-  disabledDate={(current) => {
-    // Allow selecting past dates
-    return current && current > moment().endOf('day');
-  }}
-/>
- const filteredAndSortedTransactions = transactions
- .filter((transaction) => {
-   const searchMatch = searchTerm
-     ? transaction.name.toLowerCase().includes(searchTerm.toLowerCase())
-     : true;
-   const typeMatch = typeFilter ? transaction.type === typeFilter : true;
-   return searchMatch && typeMatch;
- })
- .sort((a, b) => {
-   if (sortKey === "date") {
-     return new Date(b.date) - new Date(a.date);
-   } else if (sortKey === "amount") {
-     return b.amount - a.amount;
-   }
-   return 0;
- })
- {transactions.length !== 0 ? (
-  <>
-    <ChartsComponents sortedTransactions={sortedTransactions}/>
-    <div style={{ width: '50%', margin: '20px auto' }}>
-      <ExpensePieChart transactions={transactions} />
-    </div>
-  </>
-) : (
-  <NoTransactions />
-)}
-console.log("Filtered and sorted transactions:", filteredAndSortedTransactions); // Add this line for debugging
+
+  const sortedTransactions = transactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const filteredAndSortedTransactions = transactions
+    .filter((transaction) => {
+      const searchMatch = searchTerm
+        ? transaction.name.toLowerCase().includes(searchTerm.toLowerCase())
+        : true;
+      const typeMatch = typeFilter ? transaction.type === typeFilter : true;
+      return searchMatch && typeMatch;
+    })
+    .sort((a, b) => {
+      if (sortKey === "date") {
+        return new Date(b.date) - new Date(a.date);
+      } else if (sortKey === "amount") {
+        return b.amount - a.amount;
+      }
+      return 0;
+    });
+
+  console.log("Filtered and sorted transactions:", filteredAndSortedTransactions);
+
   return (
     <div className="dashboard-container">
       <Toaster />
@@ -224,7 +200,16 @@ console.log("Filtered and sorted transactions:", filteredAndSortedTransactions);
             showExpenseModal={showExpenseModal}
             showIncomeModal={showIncomeModal}
           />
-          {transactions.length !== 0 ? <ChartsComponents sortedTransactions={sortedTransactions}/> : <NoTransactions />}
+          {transactions.length !== 0 ? (
+            <>
+              <ChartsComponents sortedTransactions={sortedTransactions}/>
+              <div style={{ width: '20%', margin: '30px auto' }}>
+                <ExpensePieChart transactions={transactions} />
+              </div>
+            </>
+          ) : (
+            <NoTransactions />
+          )}
           <AddExpenseModal
             isExpenseModalVisible={isExpenseModalVisible}
             handleExpenseCancel={handleExpenseCancel}
@@ -260,6 +245,9 @@ console.log("Filtered and sorted transactions:", filteredAndSortedTransactions);
               <Radio.Button value="amount">Sort by Amount</Radio.Button>
             </Radio.Group>
           </div>
+          <DatePicker
+            disabledDate={(current) => current && current > moment().endOf('day')}
+          />
           <Table dataSource={filteredAndSortedTransactions} columns={columns} />
         </>
       )}

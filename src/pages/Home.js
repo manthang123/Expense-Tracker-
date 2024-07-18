@@ -22,7 +22,7 @@ const Home = ({ isLoggedIn }) => {
       link: 'https://flask1-wcqq.onrender.com/predict',
     },
     {
-      title: 'Scholarships and Loans',
+      title: 'Scholarships',
       description: 'This is a sample description for Scholarships',
       image: 'https://img.freepik.com/free-vector/premium-cash-reward-bonus-work-done-best-employee-rewarding-promotion-order-efficiency-stimulation-boss-subordinate-cartoon-characters_335657-2984.jpg?semt=sph',
       link: 'https://www.buddy4study.com/scholarships',
