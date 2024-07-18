@@ -1,3 +1,4 @@
+// Card.js
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -11,4 +12,4 @@ const Card = ({ title, description, image, link }) => {
   );
 };
 
-export default Card;
+export default Card;

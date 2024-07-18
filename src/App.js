@@ -1,42 +1,36 @@
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
-import Navbar from "./components/Navbar"
-import Home from "./pages/Home"
-import Login from "./pages/Login"
-import Signup from "./pages/Signup"
-import Dashboard from "./pages/Dashboard"
-import {useState } from 'react'
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Dashboard from "./pages/Dashboard";
+import { useState } from 'react';
 import PrivateRoute from "./components/PrivateRoute";
 import PiggyBank from "./components/PiggyBank";
-import { DatePicker } from "antd";
 import TokenShop from "./pages/TokenShop";
-function App() {
 
+function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
- 
 
   return (
     <div className="w-screen min-h-screen bg-richblack-900 flex flex-col">
-      <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}/>
+      <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
 
       <Routes>
-
-        <Route path="/" element= {<Home isLoggedIn={isLoggedIn}/>} />
-        <Route path="/login" element = {<Login  setIsLoggedIn={setIsLoggedIn} />} />
-        <Route path="/signup" element={<Signup  setIsLoggedIn={setIsLoggedIn} />} />
-        <Route path = "/Piggybank"element={<PiggyBank/>}/>        
-        <Route path="/TokenShop" element={<TokenShop/>}/>
-        <Route path="/dashboard" element = {
+        <Route path="/" element={<Home isLoggedIn={isLoggedIn} />} />
+        <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
+        <Route path="/signup" element={<Signup setIsLoggedIn={setIsLoggedIn} />} />
+        <Route path="/PiggyBank" element={<PiggyBank />} />
+        <Route path="/TokenShop" element={<TokenShop />} />
+        <Route path="/dashboard" element={
           <PrivateRoute isLoggedIn={isLoggedIn}>
-              <Dashboard/>
+            <Dashboard />
           </PrivateRoute>
-       
         } />
-
       </Routes>
-
     </div>
-    )
+  );
 }
 
 export default App;
