@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { addDoc, collection, query, onSnapshot } from "firebase/firestore";
+import { onAuthStateChanged } from 'firebase/auth';
+import moment from 'moment';
+import toast, { Toaster } from 'react-hot-toast';
+import { Table, Input, Select, Radio } from 'antd';
+import { Header } from 'antd/es/layout/layout';
+import { auth, db } from "../config";
 import Cards from '../components/Cards/cards';
 import AddExpenseModal from '../components/Modals/AddExpense';
 import AddIncomeModal from '../components/Modals/AddIncome';
-import moment from 'moment';
-import { addDoc, collection, query, onSnapshot } from "firebase/firestore";
-import { auth, db } from "../config";
-import { onAuthStateChanged } from 'firebase/auth';
-import toast, { Toaster } from 'react-hot-toast';
 import Loader from '../components/Loader';
-import { Header } from 'antd/es/layout/layout';
-import { Table } from 'antd';
+import ChartsComponents from '../components/Charts/ChartsComponents';
+import NoTransactions from '../components/NoTransactions';
 
+
+const { Option } = Select;
 const Dashboard = () => {
   const [isExpenseModalVisible, setIsExpenseModalVisible] = useState(false);
   const [isIncomeModalVisible, setIsIncomeModalVisible] = useState(false);
@@ -21,6 +25,10 @@ const Dashboard = () => {
   const [currentBalance, setCurrentBalance] = useState(0);
   const [income, setIncome] = useState(0);
   const [expenses, setExpenses] = useState(0);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
+  const [sortKey, setSortKey] = useState("");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -117,7 +125,7 @@ const Dashboard = () => {
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         let transactionsArray = [];
         querySnapshot.forEach((doc) => {
-          transactionsArray.push(doc.data());
+          transactionsArray.push({ id: doc.id, ...doc.data() });
         });
         setTransactions(transactionsArray);
         setLoading(false);
@@ -161,6 +169,23 @@ const Dashboard = () => {
     },
   ];
 
+  const filteredAndSortedTransactions = transactions
+    .filter((transaction) => {
+      const searchMatch = searchTerm
+        ? transaction.name.toLowerCase().includes(searchTerm.toLowerCase())
+        : true;
+      const typeMatch = typeFilter ? transaction.type === typeFilter : true;
+      return searchMatch && typeMatch;
+    })
+    .sort((a, b) => {
+      if (sortKey === "date") {
+        return new Date(a.date) - new Date(b.date);
+      } else if (sortKey === "amount") {
+        return a.amount - b.amount;
+      }
+      return 0;
+    });
+
   return (
     <div className="dashboard-container">
       <Toaster />
@@ -178,6 +203,7 @@ const Dashboard = () => {
             showExpenseModal={showExpenseModal}
             showIncomeModal={showIncomeModal}
           />
+          {transactions.length !== 0 ? <ChartsComponents /> : <NoTransactions />}
           <AddExpenseModal
             isExpenseModalVisible={isExpenseModalVisible}
             handleExpenseCancel={handleExpenseCancel}
@@ -188,7 +214,32 @@ const Dashboard = () => {
             handleIncomeCancel={handleIncomeCancel}
             onFinish={(values) => onFinish(values, "income")}
           />
-          <Table dataSource={transactions} columns={columns} />
+          <div className="my-5 flex items-center gap-4">
+            <Input
+              placeholder="Search by name"
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-52 p-2 border rounded"
+            />
+            <Select
+              className="w-32"
+              placeholder="Filter by type"
+              onChange={(value) => setTypeFilter(value)}
+              allowClear
+            >
+              <Option value="income">Income</Option>
+              <Option value="expense">Expense</Option>
+            </Select>
+            <Radio.Group
+              onChange={(e) => setSortKey(e.target.value)}
+              value={sortKey}
+              className="flex items-center gap-2"
+            >
+              <Radio.Button value="">No Sort</Radio.Button>
+              <Radio.Button value="date">Sort by Date</Radio.Button>
+              <Radio.Button value="amount">Sort by Amount</Radio.Button>
+            </Radio.Group>
+          </div>
+          <Table dataSource={filteredAndSortedTransactions} columns={columns} />
         </>
       )}
     </div>
