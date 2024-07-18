@@ -3,15 +3,23 @@ import Cards from '../components/Cards/cards';
 import AddExpenseModal from '../components/Modals/AddExpense';
 import AddIncomeModal from '../components/Modals/AddIncome';
 import moment from 'moment';
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, query, onSnapshot } from "firebase/firestore";
 import { auth, db } from "../config";
-import { toast } from "react-toastify";
 import { onAuthStateChanged } from 'firebase/auth';
+import toast, { Toaster } from 'react-hot-toast';
+import Loader from '../components/Loader';
+import { Header } from 'antd/es/layout/layout';
 
 const Dashboard = () => {
   const [isExpenseModalVisible, setIsExpenseModalVisible] = useState(false);
   const [isIncomeModalVisible, setIsIncomeModalVisible] = useState(false);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [transactions, setTransactions] = useState([]);
+  const [error, setError] = useState(null);
+  const [currentBalance, setCurrentBalance] = useState(0);
+  const [income, setIncome] = useState(0);
+  const [expenses, setExpenses] = useState(0);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -19,6 +27,16 @@ const Dashboard = () => {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchTransactions();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    calculateBalance();
+  }, [transactions]);
 
   const showExpenseModal = () => {
     setIsExpenseModalVisible(true);
@@ -50,9 +68,11 @@ const Dashboard = () => {
       name: values.name,
     };
     addTransaction(newTransaction);
+    setIsExpenseModalVisible(false);
+    setIsIncomeModalVisible(false);
   };
 
-  async function addTransaction(transaction, many) {
+  const addTransaction = async (transaction, many = false) => {
     if (!user) {
       toast.error("No user is authenticated");
       return;
@@ -73,24 +93,78 @@ const Dashboard = () => {
         toast.error("Couldn't add transaction");
       }
     }
-  }
+  };
+
+  const calculateBalance = () => {
+    let incomeTotal = 0;
+    let expensesTotal = 0;
+
+    transactions.forEach((transaction) => {
+      if (transaction.type === "income") {
+        incomeTotal += transaction.amount;
+      } else {
+        expensesTotal += transaction.amount;
+      }
+    });
+
+    setIncome(incomeTotal);
+    setExpenses(expensesTotal);
+    setCurrentBalance(incomeTotal - expensesTotal);
+  };
+
+  const fetchTransactions = () => {
+    setLoading(true);
+    setError(null);
+    if (user) {
+      const q = query(collection(db, `users/${user.uid}/transactions`));
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        let transactionsArray = [];
+        querySnapshot.forEach((doc) => {
+          transactionsArray.push(doc.data());
+        });
+        setTransactions(transactionsArray);
+        setLoading(false);
+        toast.success("Transactions Fetched!");
+      }, (err) => {
+        console.error("Error fetching transactions: ", err);
+        setError(err);
+        setLoading(false);
+        toast.error("Error fetching transactions");
+      });
+      return () => unsubscribe();
+    }
+    setLoading(false);
+  };
 
   return (
-    <div>
-      <Cards
-        showExpenseModal={showExpenseModal}
-        showIncomeModal={showIncomeModal}
-      />
-      <AddExpenseModal
-        isExpenseModalVisible={isExpenseModalVisible}
-        handleExpenseCancel={handleExpenseCancel}
-        onFinish={onFinish}
-      />
-      <AddIncomeModal
-        isIncomeModalVisible={isIncomeModalVisible}
-        handleIncomeCancel={handleIncomeCancel}
-        onFinish={onFinish}
-      />
+    <div className="dashboard-container">
+      <Toaster />
+      <Header />
+      {loading ? (
+        <Loader />
+      ) : error ? (
+        <div>Error: {error.message}</div>
+      ) : (
+        <>
+          <Cards
+            currentBalance={currentBalance}
+            income={income}
+            expenses={expenses}
+            showExpenseModal={showExpenseModal}
+            showIncomeModal={showIncomeModal}
+          />
+          <AddExpenseModal
+            isExpenseModalVisible={isExpenseModalVisible}
+            handleExpenseCancel={handleExpenseCancel}
+            onFinish={onFinish}
+          />
+          <AddIncomeModal
+            isIncomeModalVisible={isIncomeModalVisible}
+            handleIncomeCancel={handleIncomeCancel}
+            onFinish={onFinish}
+          />
+        </>
+      )}
     </div>
   );
 };
