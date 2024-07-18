@@ -9,6 +9,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import toast, { Toaster } from 'react-hot-toast';
 import Loader from '../components/Loader';
 import { Header } from 'antd/es/layout/layout';
+import { Table } from 'antd';
 
 const Dashboard = () => {
   const [isExpenseModalVisible, setIsExpenseModalVisible] = useState(false);
@@ -72,7 +73,7 @@ const Dashboard = () => {
     setIsIncomeModalVisible(false);
   };
 
-  const addTransaction = async (transaction, many = false) => {
+  const addTransaction = async (transaction) => {
     if (!user) {
       toast.error("No user is authenticated");
       return;
@@ -84,14 +85,10 @@ const Dashboard = () => {
         transaction
       );
       console.log("Document written with ID: ", docRef.id);
-      if (!many) {
-        toast.success("Transaction Added!");
-      }
+      toast.success("Transaction Added!");
     } catch (e) {
       console.error("Error adding document: ", e);
-      if (!many) {
-        toast.error("Couldn't add transaction");
-      }
+      toast.error("Couldn't add transaction");
     }
   };
 
@@ -136,6 +133,34 @@ const Dashboard = () => {
     setLoading(false);
   };
 
+  const columns = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Type",
+      dataIndex: "type",
+      key: "type",
+    },
+    {
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
+    },
+    {
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
+    },
+    {
+      title: "Tag",
+      dataIndex: "tag",
+      key: "tag",
+    },
+  ];
+
   return (
     <div className="dashboard-container">
       <Toaster />
@@ -156,13 +181,14 @@ const Dashboard = () => {
           <AddExpenseModal
             isExpenseModalVisible={isExpenseModalVisible}
             handleExpenseCancel={handleExpenseCancel}
-            onFinish={onFinish}
+            onFinish={(values) => onFinish(values, "expense")}
           />
           <AddIncomeModal
             isIncomeModalVisible={isIncomeModalVisible}
             handleIncomeCancel={handleIncomeCancel}
-            onFinish={onFinish}
+            onFinish={(values) => onFinish(values, "income")}
           />
+          <Table dataSource={transactions} columns={columns} />
         </>
       )}
     </div>
