@@ -1,0 +1,23 @@
+.dashboard-container {
+    background-color: white;
+    color: black; /* Ensure text is visible on white background */
+    min-height: 100vh; /* Ensure the background covers the whole viewport */
+  }
+  
+  .header {
+    background-color: white; /* Header background */
+  }
+  
+  .ant-table {
+    background-color: white; /* Table background */
+  }
+  
+  .ant-input, .ant-select, .ant-radio-group {
+    background-color: white; /* Input fields background */
+    color: black; /* Ensure text is visible */
+  }
+  
+  .ant-radio-button-wrapper {
+    color: black;
+  }
+  

@@ -12,7 +12,7 @@ import AddIncomeModal from '../components/Modals/AddIncome';
 import Loader from '../components/Loader';
 import ChartsComponents from '../components/Charts/ChartsComponents';
 import NoTransactions from '../components/NoTransactions';
-
+import './Dashboard.css';
 
 const { Option } = Select;
 const Dashboard = () => {
@@ -168,7 +168,10 @@ const Dashboard = () => {
       key: "tag",
     },
   ];
-
+  let sortedTransactions = transactions.sort((a, b) => {
+    return new Date(a.date) - new Date(b.date);
+  });
+  
   const filteredAndSortedTransactions = transactions
     .filter((transaction) => {
       const searchMatch = searchTerm
@@ -203,7 +206,7 @@ const Dashboard = () => {
             showExpenseModal={showExpenseModal}
             showIncomeModal={showIncomeModal}
           />
-          {transactions.length !== 0 ? <ChartsComponents /> : <NoTransactions />}
+          {transactions.length !== 0 ? <ChartsComponents sortedTransactions={sortedTransactions}/> : <NoTransactions />}
           <AddExpenseModal
             isExpenseModalVisible={isExpenseModalVisible}
             handleExpenseCancel={handleExpenseCancel}
