@@ -22,7 +22,7 @@ const SignupForm = ({setIsLoggedIn}) => {
     function changeHandler(event) {
 
         setFormData( (prevData) =>(
-            {
+            {   
                 ...prevData,
                 [event.target.name]:event.target.value
             }
