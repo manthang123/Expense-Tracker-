@@ -14,6 +14,7 @@ import ChartsComponents from '../components/Charts/ChartsComponents';
 import NoTransactions from '../components/NoTransactions';
 import './Dashboard.css';
 import { DatePicker } from 'antd';
+import ExpensePieChart from '../components/TransactionTable/ExpensePieChart';
 const { Option } = Select;
 const Dashboard = () => {
   const [isExpenseModalVisible, setIsExpenseModalVisible] = useState(false);
@@ -195,7 +196,16 @@ const Dashboard = () => {
    }
    return 0;
  })
-
+ {transactions.length !== 0 ? (
+  <>
+    <ChartsComponents sortedTransactions={sortedTransactions}/>
+    <div style={{ width: '50%', margin: '20px auto' }}>
+      <ExpensePieChart transactions={transactions} />
+    </div>
+  </>
+) : (
+  <NoTransactions />
+)}
 console.log("Filtered and sorted transactions:", filteredAndSortedTransactions); // Add this line for debugging
   return (
     <div className="dashboard-container">

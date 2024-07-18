@@ -7,7 +7,9 @@ import Signup from "./pages/Signup"
 import Dashboard from "./pages/Dashboard"
 import {useState } from 'react'
 import PrivateRoute from "./components/PrivateRoute";
-
+import PiggyBank from "./components/PiggyBank";
+import { DatePicker } from "antd";
+import TokenShop from "./pages/TokenShop";
 function App() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -22,6 +24,8 @@ function App() {
         <Route path="/" element= {<Home isLoggedIn={isLoggedIn}/>} />
         <Route path="/login" element = {<Login  setIsLoggedIn={setIsLoggedIn} />} />
         <Route path="/signup" element={<Signup  setIsLoggedIn={setIsLoggedIn} />} />
+        <Route path = "/Piggybank"element={<PiggyBank/>}/>        
+        <Route path="/TokenShop" element={<TokenShop/>}/>
         <Route path="/dashboard" element = {
           <PrivateRoute isLoggedIn={isLoggedIn}>
               <Dashboard/>
